@@ -1,9 +1,14 @@
+// импорт из корня проекта: root (crate) -> order (mod order в main) -> use Order здесь
+use crate::order::Order;
+
 // User - публичный struct, поля при этом приватные
 // struct хранит поля
 pub struct User {
     // User является владельцем строки своего имени
     name: String,
-    balance: f32
+    balance: f32,
+    // Vec == List в C#
+    orders: Vec<Order>,
 }
 
 // для реализации методов создадим impl с тем же названием
@@ -27,7 +32,8 @@ impl User {
     pub fn new(name: String, balance: f32) -> Self {
         Self {
             name,
-            balance
+            balance,
+            orders: Vec::new(),
         }
     }
 
@@ -37,5 +43,8 @@ impl User {
     /// и вернуть копию его значения (потому что простой тип данных)
     pub fn get_balance(&self) -> f32 {
         self.balance
+    }
+    pub fn get_name(&self) -> &str {
+        &self.name
     }
 }

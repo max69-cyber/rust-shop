@@ -1,7 +1,9 @@
 // подключаем модуль user по имени файла (так просто потому что лежит в той же папке)
+mod order;
 mod user;
 
 // Не хочу доставать каждый раз struct User из модуля user - использую use, чтобы сократить до User
+use order::Order;
 use user::User;
 
 // Очевидно, что это точка входа 😎
@@ -51,4 +53,20 @@ fn main() {
     // или же так тоже норм
     let balance = User::get_balance(&user_with_cloned_string);
     println!("Balance: {balance}");
+
+    // Добавил заказы:
+    let example_order: Order = Order::new(
+        String::from("Macbook M5 Air"),
+        1000f32,
+        String::from("cool laptop"),
+    );
+
+    println!("\n----------------------------------------------------------------------\n");
+
+    println!(
+        "id: {}, price: {}, description: {}",
+        example_order.get_id(),
+        Order::get_price(&example_order),
+        example_order.get_description(),
+    );
 }
