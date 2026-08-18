@@ -3,7 +3,7 @@ mod order;
 mod user;
 
 // Не хочу доставать каждый раз struct User из модуля user - использую use, чтобы сократить до User
-use order::Order;
+use order::{Order, OrderError};
 use user::User;
 
 // Очевидно, что это точка входа 😎
@@ -54,19 +54,51 @@ fn main() {
     let balance = User::get_balance(&user_with_cloned_string);
     println!("Balance: {balance}");
 
+    println!("\n----------------------------------------------------------------------\n");
+
+    fn print_order_fields(order: &Order) {
+        println!(
+            "id: {}, price: {}, description: {}",
+            order.get_id(),
+            Order::get_price(order),
+            order.get_description(),
+        );
+    }
+
+    // Пусть пока наверное забирает order себе, дальше не понадобится пока
+    fn handle_order_result(order: Result<Order, OrderError>) {
+        match order {
+            Ok(o) => {
+                print_order_fields(&o);
+            }
+            Err(OrderError::EmptyNameError) => {
+                println!("Error while creating new order: Empty name for order!");
+            }
+            Err(OrderError::InvalidPriceError) => {
+                println!("Error while creating new order: Price must be greater than zero!");
+            }
+        }
+    }
+
     // Добавил заказы:
-    let example_order: Order = Order::new(
+    // UPD: теперь с enum в лице Result из конструктора
+    let example_order: Result<Order, OrderError> = Order::new(
         String::from("Macbook M5 Air"),
         1000f32,
         String::from("cool laptop"),
     );
+    handle_order_result(example_order);
 
     println!("\n----------------------------------------------------------------------\n");
 
-    println!(
-        "id: {}, price: {}, description: {}",
-        example_order.get_id(),
-        Order::get_price(&example_order),
-        example_order.get_description(),
+    let invalid_order: Result<Order, OrderError> = Order::new(
+        String::from("Macbook M3 Max"),
+        -1.1,
+        String::from("cool laptop too"),
     );
+    handle_order_result(invalid_order);
+
+    println!("\n----------------------------------------------------------------------\n");
+
+    //
 }
