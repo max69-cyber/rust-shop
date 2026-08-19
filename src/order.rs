@@ -4,6 +4,7 @@ pub struct Order {
     description: String,
 }
 
+#[derive(Debug)]
 pub enum OrderError {
     EmptyNameError,
     InvalidPriceError,

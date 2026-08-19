@@ -11,6 +11,17 @@ pub struct User {
     orders: Vec<Order>,
 }
 
+// для того чтобы смочб использовать unwrap в покупке
+#[derive(Debug)]
+pub enum UserError {
+    EmptyNameError,
+    InvalidBalanceError,
+}
+// можно вынести куда то
+pub enum BuyError {
+    NotEnoughMoneyError,
+}
+
 // для реализации методов создадим impl с тем же названием
 impl User {
     /// Конструктор User, получает строку имени и число с запятой баланса
@@ -29,12 +40,20 @@ impl User {
     /// Если бы был то значение просто пропало, получается шорткат: return a; == a
     ///
     /// Self - это то же самое что и User тут, ну и вообще так работает для любых struct
-    pub fn new(name: String, balance: f32) -> Self {
-        Self {
+    pub fn new(name: String, balance: f32) -> Result<Self, UserError> {
+        if name.trim().is_empty() {
+            return Err(UserError::EmptyNameError);
+        }
+
+        if balance <= 0.0 {
+            return Err(UserError::InvalidBalanceError);
+        }
+
+        Ok(Self {
             name,
             balance,
             orders: Vec::new(),
-        }
+        })
     }
 
     /// Получить баланс по инстансу, хотим получить ссылку на какой-то инстанс юзера,
@@ -46,5 +65,23 @@ impl User {
     }
     pub fn get_name(&self) -> &str {
         &self.name
+    }
+    pub fn get_orders(&self) -> &[Order] {
+        &self.orders
+    }
+
+    //пока что сделаю упрощенную модель, в которой ownership заказов у пользователя
+    // позже можно создать репозитории для ресов
+    pub fn buy(&mut self, order: Order) -> Result<(), BuyError> {
+        let order_price = order.get_price();
+
+        if self.balance < order_price {
+            return Err(BuyError::NotEnoughMoneyError);
+        }
+
+        self.balance -= order_price;
+        self.orders.push(order);
+
+        Ok(())
     }
 }

@@ -4,7 +4,7 @@ mod user;
 
 // Не хочу доставать каждый раз struct User из модуля user - использую use, чтобы сократить до User
 use order::{Order, OrderError};
-use user::User;
+use user::{BuyError, User};
 
 // Очевидно, что это точка входа 😎
 fn main() {
@@ -49,9 +49,12 @@ fn main() {
     println!("{not_users_string}");
 
     // и вот еще вывод баланса, тут синтаксический сахар, инстанс прокидывается в функцию
-    println!("Balance: {}", user_with_original_name.get_balance());
+    println!(
+        "Balance: {}",
+        user_with_original_name.unwrap().get_balance()
+    );
     // или же так тоже норм
-    let balance = User::get_balance(&user_with_cloned_string);
+    let balance = User::get_balance(&user_with_cloned_string.unwrap());
     println!("Balance: {balance}");
 
     println!("\n----------------------------------------------------------------------\n");
@@ -65,17 +68,27 @@ fn main() {
         );
     }
 
-    // Пусть пока наверное забирает order себе, дальше не понадобится пока
-    fn handle_order_result(order: Result<Order, OrderError>) {
+    fn handle_order_result(order: &Result<Order, OrderError>) {
         match order {
             Ok(o) => {
-                print_order_fields(&o);
+                print_order_fields(o);
             }
             Err(OrderError::EmptyNameError) => {
                 println!("Error while creating new order: Empty name for order!");
             }
             Err(OrderError::InvalidPriceError) => {
                 println!("Error while creating new order: Price must be greater than zero!");
+            }
+        }
+    }
+
+    fn buy_order(user: &mut User, order: Order) {
+        match user.buy(order) {
+            Err(BuyError::NotEnoughMoneyError) => {
+                println!("Payment Error: not enough money on balance");
+            }
+            Ok(()) => {
+                println!("Payment Success for {}!", user.get_name());
             }
         }
     }
@@ -87,7 +100,16 @@ fn main() {
         1000f32,
         String::from("cool laptop"),
     );
-    handle_order_result(example_order);
+    handle_order_result(&example_order);
+    let unwrapped_order = example_order.unwrap();
+
+    let one_more_example_order: Result<Order, OrderError> = Order::new(
+        String::from("Macbook M4 Pro"),
+        2000f32,
+        String::from("cool laptop 2"),
+    );
+    handle_order_result(&one_more_example_order);
+    let one_more_unwrapped_order = one_more_example_order.unwrap();
 
     println!("\n----------------------------------------------------------------------\n");
 
@@ -96,9 +118,13 @@ fn main() {
         -1.1,
         String::from("cool laptop too"),
     );
-    handle_order_result(invalid_order);
+    handle_order_result(&invalid_order);
 
     println!("\n----------------------------------------------------------------------\n");
 
-    //
+    let mut rich_user = User::new(String::from("Alex"), 1000000.00).unwrap();
+    let mut poor_user = User::new(String::from("Alex"), 1f32).unwrap();
+
+    buy_order(&mut rich_user, unwrapped_order);
+    buy_order(&mut poor_user, one_more_unwrapped_order);
 }
