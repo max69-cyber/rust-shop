@@ -1,5 +1,5 @@
 pub struct Order {
-    id: String,
+    name: String,
     price: f32,
     description: String,
 }
@@ -21,15 +21,15 @@ impl Order {
         }
 
         Ok(Order {
-            id,
+            name: id,
             price,
             description,
         })
     }
 
     // геттеры приватных полей
-    pub fn get_id(&self) -> &str {
-        &self.id
+    pub fn get_name(&self) -> &str {
+        &self.name
     }
 
     pub fn get_price(&self) -> f32 {

@@ -61,8 +61,8 @@ fn main() {
 
     fn print_order_fields(order: &Order) {
         println!(
-            "id: {}, price: {}, description: {}",
-            order.get_id(),
+            "name: {}, price: {}, description: {}",
+            order.get_name(),
             Order::get_price(order),
             order.get_description(),
         );
