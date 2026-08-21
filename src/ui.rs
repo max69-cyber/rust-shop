@@ -1,13 +1,16 @@
+//входной поток или типа того
 use std::io;
+// позволяет запустить что-то другое как отдельный процесс в ОС
+use std::process::Command;
 
-// cli ui для приложения
+/// cli ui для приложения
 enum Screen {
     Main,
     Catalog,
     Exit,
 }
 
-// Принимает строковый ввод пользователя в консоли.
+/// Принимает строковый ввод пользователя в консоли.
 pub fn prompt(text: &str) -> String {
     // то, что показать перед полем ввода
     println!("{}", text);
@@ -27,4 +30,16 @@ pub fn prompt(text: &str) -> String {
 
     // возвращаем обрезаем и преобразуем обратно в String + return
     buf.trim().to_string()
+}
+
+/// Обновление экрана (очистка консоли)
+pub fn clear() {
+    // вызываем clear (на винду пока забьем), проверяем что получилось
+    match Command::new("clear").status() {
+        Ok(_) => {}
+        // если не получилось то напишем
+        Err(err) => {
+            println!("Error while updating screen: {}", err);
+        }
+    }
 }

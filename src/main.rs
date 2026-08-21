@@ -130,4 +130,8 @@ fn main() {
     buy_order(&mut poor_user, one_more_unwrapped_order);
 
     println!("\n----------------------------------------------------------------------\n");
+
+    print!("Нажмите enter для перехода в cli-версию приложения.");
+    ui::prompt("");
+    ui::clear();
 }
