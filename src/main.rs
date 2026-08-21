@@ -1,5 +1,6 @@
 // подключаем модуль user по имени файла (так просто потому что лежит в той же папке)
 mod order;
+mod ui;
 mod user;
 
 // Не хочу доставать каждый раз struct User из модуля user - использую use, чтобы сократить до User
@@ -127,4 +128,6 @@ fn main() {
 
     buy_order(&mut rich_user, unwrapped_order);
     buy_order(&mut poor_user, one_more_unwrapped_order);
+
+    println!("\n----------------------------------------------------------------------\n");
 }
