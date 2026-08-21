@@ -43,3 +43,52 @@ pub fn clear() {
         }
     }
 }
+
+/// запускает cli-интерфейс
+pub fn run_cli() {
+    // начальный экран, будем мутировать его в цикле
+    let mut screen = Screen::Main;
+
+    // бесконечный цикл (до break)
+    loop {
+        // чистим экран от предыдущего стейта
+        clear();
+        // переключатель экранов по вводу пользователя
+        screen = match screen {
+            Screen::Main => {
+                // выведем название экрана и опции действий
+                println!("=== Main Menu ===\n");
+                println!("0. Exit");
+                println!("1. Catalog");
+
+                // принимаем инпут с желаемым действием
+                match prompt("> ").as_str() {
+                    "0" => Screen::Exit,
+                    "1" => Screen::Catalog,
+                    _ => {
+                        println!("No such option in actions list!");
+                        Screen::Main
+                    }
+                }
+            }
+            Screen::Catalog => {
+                clear();
+
+                println!("=== Catalog ===\n");
+                println!("0. To Main Menu");
+
+                match prompt("> ").as_str() {
+                    "0" => Screen::Main,
+                    _ => {
+                        println!("No such option in actions list!");
+                        Screen::Catalog
+                    }
+                }
+            }
+            Screen::Exit => {
+                println!("Bye!");
+                break;
+            }
+        }
+    }
+}

@@ -7,8 +7,7 @@ mod user;
 use order::{Order, OrderError};
 use user::{BuyError, User};
 
-// Очевидно, что это точка входа 😎
-fn main() {
+fn old_demo() {
     //println!("Hello, world!");
     // Для первого коммита просто создадим пользователя разными способами
 
@@ -130,8 +129,15 @@ fn main() {
     buy_order(&mut poor_user, one_more_unwrapped_order);
 
     println!("\n----------------------------------------------------------------------\n");
+}
+
+// Очевидно, что это точка входа 😎
+fn main() {
+    old_demo();
 
     print!("Нажмите enter для перехода в cli-версию приложения.");
     ui::prompt("");
     ui::clear();
+
+    ui::run_cli();
 }
