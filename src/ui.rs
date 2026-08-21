@@ -1,5 +1,5 @@
-//входной поток или типа того
-use std::io;
+//входной поток или типа того, Write дает flush
+use std::io::{self, Write};
 // позволяет запустить что-то другое как отдельный процесс в ОС
 use std::process::Command;
 
@@ -13,7 +13,9 @@ enum Screen {
 /// Принимает строковый ввод пользователя в консоли.
 pub fn prompt(text: &str) -> String {
     // то, что показать перед полем ввода
-    println!("{}", text);
+    print!("{}", text);
+    // чтобы вывелся текст, а только потом ввод
+    io::stdout().flush().unwrap();
 
     // заготовка под вводимую строку
     let mut buf = String::new();
@@ -67,6 +69,7 @@ pub fn run_cli() {
                     "1" => Screen::Catalog,
                     _ => {
                         println!("No such option in actions list!");
+                        prompt("Press Enter to continue...");
                         Screen::Main
                     }
                 }
@@ -74,13 +77,16 @@ pub fn run_cli() {
             Screen::Catalog => {
                 clear();
 
-                println!("=== Catalog ===\n");
+                println!("=== Catalog ===");
+                println!("No products in catalog now.\n");
+
                 println!("0. To Main Menu");
 
                 match prompt("> ").as_str() {
                     "0" => Screen::Main,
                     _ => {
                         println!("No such option in actions list!");
+                        prompt("Press Enter to continue...");
                         Screen::Catalog
                     }
                 }
