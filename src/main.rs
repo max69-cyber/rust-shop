@@ -1,10 +1,11 @@
 // подключаем модуль user по имени файла (так просто потому что лежит в той же папке)
 mod order;
+mod product;
 mod ui;
 mod user;
 
 // Не хочу доставать каждый раз struct User из модуля user - использую use, чтобы сократить до User
-use order::{Order, OrderError};
+use order::{OrderLegacy, OrderLegacyError};
 use user::{BuyError, User};
 
 fn old_demo() {
@@ -59,30 +60,30 @@ fn old_demo() {
 
     println!("\n----------------------------------------------------------------------\n");
 
-    fn print_order_fields(order: &Order) {
+    fn print_order_fields(order: &OrderLegacy) {
         println!(
             "name: {}, price: {}, description: {}",
             order.get_name(),
-            Order::get_price(order),
+            OrderLegacy::get_price(order),
             order.get_description(),
         );
     }
 
-    fn handle_order_result(order: &Result<Order, OrderError>) {
+    fn handle_order_result(order: &Result<OrderLegacy, OrderLegacyError>) {
         match order {
             Ok(o) => {
                 print_order_fields(o);
             }
-            Err(OrderError::EmptyNameError) => {
+            Err(OrderLegacyError::EmptyNameError) => {
                 println!("Error while creating new order: Empty name for order!");
             }
-            Err(OrderError::InvalidPriceError) => {
+            Err(OrderLegacyError::InvalidPriceError) => {
                 println!("Error while creating new order: Price must be greater than zero!");
             }
         }
     }
 
-    fn buy_order(user: &mut User, order: Order) {
+    fn buy_order(user: &mut User, order: OrderLegacy) {
         match user.buy(order) {
             Err(BuyError::NotEnoughMoneyError) => {
                 println!("Payment Error: not enough money on balance");
@@ -95,7 +96,7 @@ fn old_demo() {
 
     // Добавил заказы:
     // UPD: теперь с enum в лице Result из конструктора
-    let example_order: Result<Order, OrderError> = Order::new(
+    let example_order: Result<OrderLegacy, OrderLegacyError> = OrderLegacy::new(
         String::from("Macbook M5 Air"),
         1000f32,
         String::from("cool laptop"),
@@ -103,7 +104,7 @@ fn old_demo() {
     handle_order_result(&example_order);
     let unwrapped_order = example_order.unwrap();
 
-    let one_more_example_order: Result<Order, OrderError> = Order::new(
+    let one_more_example_order: Result<OrderLegacy, OrderLegacyError> = OrderLegacy::new(
         String::from("Macbook M4 Pro"),
         2000f32,
         String::from("cool laptop 2"),
@@ -113,7 +114,7 @@ fn old_demo() {
 
     println!("\n----------------------------------------------------------------------\n");
 
-    let invalid_order: Result<Order, OrderError> = Order::new(
+    let invalid_order: Result<OrderLegacy, OrderLegacyError> = OrderLegacy::new(
         String::from("Macbook M3 Max"),
         -1.1,
         String::from("cool laptop too"),

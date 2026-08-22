@@ -1,5 +1,5 @@
 // импорт из корня проекта: root (crate) -> order (mod order в main) -> use Order здесь
-use crate::order::Order;
+use crate::order::OrderLegacy;
 
 // User - публичный struct, поля при этом приватные
 // struct хранит поля
@@ -8,7 +8,7 @@ pub struct User {
     name: String,
     balance: f32,
     // Vec == List в C#
-    orders: Vec<Order>,
+    orders: Vec<OrderLegacy>,
 }
 
 // для того чтобы смочб использовать unwrap в покупке
@@ -66,13 +66,13 @@ impl User {
     pub fn get_name(&self) -> &str {
         &self.name
     }
-    pub fn get_orders(&self) -> &[Order] {
+    pub fn get_orders(&self) -> &[OrderLegacy] {
         &self.orders
     }
 
     //пока что сделаю упрощенную модель, в которой ownership заказов у пользователя
     // позже можно создать репозитории для ресов
-    pub fn buy(&mut self, order: Order) -> Result<(), BuyError> {
+    pub fn buy(&mut self, order: OrderLegacy) -> Result<(), BuyError> {
         let order_price = order.get_price();
 
         if self.balance < order_price {
