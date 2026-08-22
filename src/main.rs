@@ -1,12 +1,11 @@
 // подключаем модуль user по имени файла (так просто потому что лежит в той же папке)
-mod order;
-mod product;
+mod domain;
 mod ui;
-mod user;
 
 // Не хочу доставать каждый раз struct User из модуля user - использую use, чтобы сократить до User
-use order::{OrderLegacy, OrderLegacyError};
-use user::{BuyError, User};
+use domain::order::{OrderLegacy, OrderLegacyError};
+use domain::user::{BuyError, User};
+use ui::ui_core;
 
 fn old_demo() {
     //println!("Hello, world!");
@@ -137,8 +136,8 @@ fn main() {
     old_demo();
 
     print!("Нажмите enter для перехода в cli-версию приложения.");
-    ui::prompt("");
-    ui::clear();
+    ui_core::prompt("");
+    ui_core::clear();
 
-    ui::run_cli();
+    ui_core::run_cli();
 }

@@ -1,5 +1,5 @@
-// импорт из корня проекта: root (crate) -> order (mod order в main) -> use Order здесь
-use crate::order::OrderLegacy;
+// импорт из текущей директории: root (crate) -> order (mod order в main) -> use Order здесь
+use super::order::OrderLegacy;
 
 // User - публичный struct, поля при этом приватные
 // struct хранит поля
@@ -11,7 +11,7 @@ pub struct User {
     orders: Vec<OrderLegacy>,
 }
 
-// для того чтобы смочб использовать unwrap в покупке
+// для того чтобы смочь использовать unwrap в покупке
 #[derive(Debug)]
 pub enum UserError {
     EmptyNameError,
