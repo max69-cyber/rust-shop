@@ -1,5 +1,6 @@
 // импорт из текущей директории: root (crate) -> order (mod order в main) -> use Order здесь
-use super::order::OrderLegacy;
+use super::order::{Order, OrderLegacy};
+use super::product::Product;
 
 // User - публичный struct, поля при этом приватные
 // struct хранит поля
@@ -8,7 +9,8 @@ pub struct User {
     name: String,
     balance: f32,
     // Vec == List в C#
-    orders: Vec<OrderLegacy>,
+    orders_legacy: Vec<OrderLegacy>,
+    orders: Vec<Order>,
 }
 
 // для того чтобы смочь использовать unwrap в покупке
@@ -52,6 +54,7 @@ impl User {
         Ok(Self {
             name,
             balance,
+            orders_legacy: Vec::new(),
             orders: Vec::new(),
         })
     }
@@ -66,13 +69,15 @@ impl User {
     pub fn get_name(&self) -> &str {
         &self.name
     }
-    pub fn get_orders(&self) -> &[OrderLegacy] {
+    pub fn get_orders_legacy(&self) -> &[OrderLegacy] {
+        &self.orders_legacy
+    }
+    pub fn get_orders(&self) -> &[Order] {
         &self.orders
     }
 
-    //пока что сделаю упрощенную модель, в которой ownership заказов у пользователя
     // позже можно создать репозитории для ресов
-    pub fn buy(&mut self, order: OrderLegacy) -> Result<(), BuyError> {
+    pub fn buy_legacy(&mut self, order: OrderLegacy) -> Result<(), BuyError> {
         let order_price = order.get_price();
 
         if self.balance < order_price {
@@ -80,6 +85,23 @@ impl User {
         }
 
         self.balance -= order_price;
+        self.orders_legacy.push(order);
+
+        Ok(())
+    }
+
+    pub fn buy(&mut self, product: &Product) -> Result<(), BuyError> {
+        let price = product.get_price();
+        let article: String = product.get_article().to_string();
+
+        if self.balance < price {
+            return Err(BuyError::NotEnoughMoneyError);
+        }
+
+        self.balance -= price;
+
+        let order =
+            Order::new(article, price).expect("Invalid price is already checked by Product");
         self.orders.push(order);
 
         Ok(())

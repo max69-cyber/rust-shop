@@ -18,6 +18,7 @@ pub enum OrderLegacyError {
     InvalidPriceError,
 }
 
+#[derive(Debug)]
 pub enum OrderError {
     NoSuchProductError,
     InvalidPriceError,

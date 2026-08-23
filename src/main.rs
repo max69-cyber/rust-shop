@@ -84,7 +84,7 @@ fn old_demo() {
     }
 
     fn buy_order(user: &mut User, order: OrderLegacy) {
-        match user.buy(order) {
+        match user.buy_legacy(order) {
             Err(BuyError::NotEnoughMoneyError) => {
                 println!("Payment Error: not enough money on balance");
             }
