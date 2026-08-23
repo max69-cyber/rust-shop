@@ -3,6 +3,9 @@ use std::io::{self, Write};
 // позволяет запустить что-то другое как отдельный процесс в ОС
 use std::process::Command;
 
+use crate::domain::user::{BuyError, User};
+use crate::repository::products_repository::ProductsRepository;
+
 /// cli ui для приложения
 enum Screen {
     Main,
@@ -47,7 +50,7 @@ pub fn clear() {
 }
 
 /// запускает cli-интерфейс
-pub fn run_cli() {
+pub fn run_cli(user: &mut User, catalog: &mut ProductsRepository) {
     // начальный экран, будем мутировать его в цикле
     let mut screen = Screen::Main;
 
@@ -57,44 +60,96 @@ pub fn run_cli() {
         clear();
         // переключатель экранов по вводу пользователя
         screen = match screen {
-            Screen::Main => {
-                // выведем название экрана и опции действий
-                println!("=== Main Menu ===\n");
-                println!("0. Exit");
-                println!("1. Catalog");
-
-                // принимаем инпут с желаемым действием
-                match prompt("> ").as_str() {
-                    "0" => Screen::Exit,
-                    "1" => Screen::Catalog,
-                    _ => {
-                        println!("No such option in actions list!");
-                        prompt("Press Enter to continue...");
-                        Screen::Main
-                    }
-                }
-            }
-            Screen::Catalog => {
-                clear();
-
-                println!("=== Catalog ===");
-                println!("No products in catalog now.\n");
-
-                println!("0. To Main Menu");
-
-                match prompt("> ").as_str() {
-                    "0" => Screen::Main,
-                    _ => {
-                        println!("No such option in actions list!");
-                        prompt("Press Enter to continue...");
-                        Screen::Catalog
-                    }
-                }
-            }
+            Screen::Main => main_screen(user),
+            Screen::Catalog => catalog_screen(user, catalog),
             Screen::Exit => {
                 println!("Bye!");
                 break;
             }
         }
     }
+}
+
+fn main_screen(user: &User) -> Screen {
+    println!("=== Main Menu ===\n");
+    println!(
+        "Пользователь: {}, баланс: {:.2}\n",
+        user.get_name(),
+        user.get_balance()
+    );
+    println!("0. Exit");
+    println!("1. Catalog");
+
+    match prompt("> ").as_str() {
+        "0" => Screen::Exit,
+        "1" => Screen::Catalog,
+        _ => {
+            println!("No such option in actions list!");
+            prompt("Press Enter to continue...");
+            Screen::Main
+        }
+    }
+}
+
+fn catalog_screen(user: &mut User, catalog: &ProductsRepository) -> Screen {
+    println!("=== Catalog ===\n");
+
+    let items = catalog.get_list();
+
+    if items.is_empty() {
+        println!("No products in catalog now.\n");
+    } else {
+        // iter позволяет пользоваться вектором после выполнения цикла, без него цикл поглотит его
+        // enumerate выдает каждому элементу индекс, зачем цикл использует его (i)
+        for (i, product) in items.iter().enumerate() {
+            // :.2 == два знака после запятой
+            println!(
+                "{}. {} — {:.2} ({})",
+                i + 1,
+                product.get_name(),
+                product.get_price(),
+                product.get_description()
+            );
+        }
+        println!();
+    }
+
+    println!("Введите номер товара, чтобы купить его.");
+    println!("0. To Main Menu");
+
+    let choice = prompt("> ");
+
+    if choice == "0" {
+        return Screen::Main;
+    }
+
+    // преобразует строки в числовые типы, нужный выводится или указывается в турбофише
+    let index = match choice.parse::<usize>() {
+        Ok(n) => n,
+        Err(_) => {
+            println!("Некорректный ввод!");
+            prompt("Press Enter to continue...");
+            return Screen::Catalog;
+        }
+    };
+
+    if index == 0 || index > items.len() {
+        println!("Нет товара с таким номером!");
+        prompt("Press Enter to continue...");
+        return Screen::Catalog;
+    }
+
+    let product = items[index - 1];
+
+    match user.buy(product) {
+        Ok(()) => println!(
+            "Куплено: {}! Остаток на балансе: {:.2}",
+            product.get_name(),
+            user.get_balance()
+        ),
+        Err(BuyError::NotEnoughMoneyError) => println!("Недостаточно средств на балансе!"),
+    }
+    prompt("Press Enter to continue...");
+
+    Screen::Catalog
 }

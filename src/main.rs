@@ -5,8 +5,42 @@ mod ui;
 
 // Не хочу доставать каждый раз struct User из модуля user - использую use, чтобы сократить до User
 use domain::order::{OrderLegacy, OrderLegacyError};
+use domain::product::Product;
 use domain::user::{BuyError, User};
+use repository::products_repository::ProductsRepository;
 use ui::ui_core;
+
+/// заполняет каталог стартовым набором товаров
+fn seed_catalog() -> ProductsRepository {
+    let mut catalog = ProductsRepository::new();
+
+    let macbooks = [
+        ("MB-AIR-M5", "Macbook Air M5", 1000f32, "cool laptop"),
+        ("MB-PRO-M4", "Macbook Pro M4", 2000f32, "even cooler laptop"),
+        (
+            "MB-PRO-M4-MAX",
+            "Macbook Pro M4 Max",
+            3500f32,
+            "the coolest laptop",
+        ),
+    ];
+
+    for (article, name, price, description) in macbooks {
+        let product = Product::new(
+            article.to_string(),
+            name.to_string(),
+            price,
+            description.to_string(),
+        )
+        .expect("seed-данные каталога всегда валидны");
+
+        catalog
+            .add(product)
+            .expect("артикулы в seed-данных уникальны");
+    }
+
+    catalog
+}
 
 fn old_demo() {
     //println!("Hello, world!");
@@ -140,5 +174,8 @@ fn main() {
     ui_core::prompt("");
     ui_core::clear();
 
-    ui_core::run_cli();
+    let mut user = User::new("Alex".to_string(), 1000f32).expect("стартовые данные валидны");
+    let mut catalog = seed_catalog();
+
+    ui_core::run_cli(&mut user, &mut catalog);
 }

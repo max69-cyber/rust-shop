@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 pub mod products_repository;
 
+#[derive(Debug)]
 pub enum RepositoryError {
     AddingDuplicateItemError,
 }
