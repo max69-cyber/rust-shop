@@ -52,3 +52,85 @@ impl<T: Identifiable> Repository<T> {
         self.items.values().collect()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // тестовый тип, реализующий Identifiable, чтобы не тянуть сюда типы из domain
+    struct Item {
+        id: String,
+    }
+
+    impl Identifiable for Item {
+        fn get_id(&self) -> String {
+            self.id.clone()
+        }
+    }
+
+    #[test]
+    fn add_and_find_item() {
+        let mut repo: Repository<Item> = Repository::new();
+
+        let result = repo.add(Item {
+            id: "A".to_string(),
+        });
+
+        assert!(result.is_ok());
+        assert!(repo.find("A").is_some());
+    }
+
+    #[test]
+    fn add_rejects_duplicate_id() {
+        let mut repo: Repository<Item> = Repository::new();
+
+        repo.add(Item {
+            id: "A".to_string(),
+        })
+        .unwrap();
+        let second = repo.add(Item {
+            id: "A".to_string(),
+        });
+
+        assert!(matches!(
+            second,
+            Err(RepositoryError::AddingDuplicateItemError)
+        ));
+    }
+
+    #[test]
+    fn find_returns_none_for_missing_id() {
+        let repo: Repository<Item> = Repository::new();
+
+        assert!(repo.find("MISSING").is_none());
+    }
+
+    #[test]
+    fn exists_reflects_repository_state() {
+        let mut repo: Repository<Item> = Repository::new();
+
+        assert!(!repo.exists("A"));
+
+        repo.add(Item {
+            id: "A".to_string(),
+        })
+        .unwrap();
+
+        assert!(repo.exists("A"));
+    }
+
+    #[test]
+    fn get_list_returns_all_items() {
+        let mut repo: Repository<Item> = Repository::new();
+        repo.add(Item {
+            id: "A".to_string(),
+        })
+        .unwrap();
+        repo.add(Item {
+            id: "B".to_string(),
+        })
+        .unwrap();
+
+        assert_eq!(repo.get_list().len(), 2);
+    }
+}

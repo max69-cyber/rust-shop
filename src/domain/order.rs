@@ -85,3 +85,38 @@ impl Order {
         self.purchase_time
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn creates_valid_order() {
+        let order = Order::new("ART-1".to_string(), 1000.0);
+
+        assert!(order.is_ok());
+    }
+
+    #[test]
+    fn rejects_zero_price() {
+        let order = Order::new("ART-1".to_string(), 0.0);
+
+        assert!(matches!(order, Err(OrderError::InvalidPriceError)));
+    }
+
+    #[test]
+    fn rejects_negative_price() {
+        let order = Order::new("ART-1".to_string(), -1.0);
+
+        // для enum ошибок надо использовать matches
+        assert!(matches!(order, Err(OrderError::InvalidPriceError)));
+    }
+
+    #[test]
+    fn getters_return_correct_values() {
+        let order = Order::new("ART-1".to_string(), 1500.0).unwrap();
+
+        assert_eq!(order.get_product_article(), "ART-1");
+        assert_eq!(order.get_price_paid(), 1500.0);
+    }
+}
