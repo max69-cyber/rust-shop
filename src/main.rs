@@ -170,11 +170,11 @@ fn old_demo() {
 fn main() {
     old_demo();
 
-    print!("Нажмите enter для перехода в cli-версию приложения.");
+    print!("Press Enter to go to the CLI version of the app.");
     ui_core::prompt("");
     ui_core::clear();
 
-    let mut user = User::new("Alex".to_string(), 1000f32).expect("стартовые данные валидны");
+    let mut user = User::new("Alex".to_string(), 10000f32).expect("стартовые данные валидны");
     let mut catalog = seed_catalog();
 
     ui_core::run_cli(&mut user, &mut catalog);

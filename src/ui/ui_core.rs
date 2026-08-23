@@ -10,6 +10,7 @@ use crate::repository::products_repository::ProductsRepository;
 enum Screen {
     Main,
     Catalog,
+    Inventory,
     Exit,
 }
 
@@ -62,6 +63,7 @@ pub fn run_cli(user: &mut User, catalog: &mut ProductsRepository) {
         screen = match screen {
             Screen::Main => main_screen(user),
             Screen::Catalog => catalog_screen(user, catalog),
+            Screen::Inventory => inventory_screen(user, catalog),
             Screen::Exit => {
                 println!("Bye!");
                 break;
@@ -73,16 +75,18 @@ pub fn run_cli(user: &mut User, catalog: &mut ProductsRepository) {
 fn main_screen(user: &User) -> Screen {
     println!("=== Main Menu ===\n");
     println!(
-        "Пользователь: {}, баланс: {:.2}\n",
+        "User: {}, balance: {:.2}\n",
         user.get_name(),
         user.get_balance()
     );
     println!("0. Exit");
     println!("1. Catalog");
+    println!("2. Inventory");
 
     match prompt("> ").as_str() {
         "0" => Screen::Exit,
         "1" => Screen::Catalog,
+        "2" => Screen::Inventory,
         _ => {
             println!("No such option in actions list!");
             prompt("Press Enter to continue...");
@@ -114,7 +118,7 @@ fn catalog_screen(user: &mut User, catalog: &ProductsRepository) -> Screen {
         println!();
     }
 
-    println!("Введите номер товара, чтобы купить его.");
+    println!("Enter a product number to buy it.");
     println!("0. To Main Menu");
 
     let choice = prompt("> ");
@@ -127,14 +131,14 @@ fn catalog_screen(user: &mut User, catalog: &ProductsRepository) -> Screen {
     let index = match choice.parse::<usize>() {
         Ok(n) => n,
         Err(_) => {
-            println!("Некорректный ввод!");
+            println!("Invalid input!");
             prompt("Press Enter to continue...");
             return Screen::Catalog;
         }
     };
 
     if index == 0 || index > items.len() {
-        println!("Нет товара с таким номером!");
+        println!("No such product number!");
         prompt("Press Enter to continue...");
         return Screen::Catalog;
     }
@@ -143,13 +147,43 @@ fn catalog_screen(user: &mut User, catalog: &ProductsRepository) -> Screen {
 
     match user.buy(product) {
         Ok(()) => println!(
-            "Куплено: {}! Остаток на балансе: {:.2}",
+            "Bought: {}! Balance left: {:.2}",
             product.get_name(),
             user.get_balance()
         ),
-        Err(BuyError::NotEnoughMoneyError) => println!("Недостаточно средств на балансе!"),
+        Err(BuyError::NotEnoughMoneyError) => println!("Not enough money on balance!"),
     }
     prompt("Press Enter to continue...");
 
     Screen::Catalog
+}
+
+fn inventory_screen(user: &User, catalog: &ProductsRepository) -> Screen {
+    println!("=== Inventory ===\n");
+
+    let orders = user.get_orders();
+
+    if orders.is_empty() {
+        println!("You haven't bought anything yet.\n");
+    } else {
+        for (i, order) in orders.iter().enumerate() {
+            let name = match catalog.find(order.get_product_article()) {
+                Some(product) => product.get_name(),
+                None => "Product is not found",
+            };
+
+            println!("{}. {} — {:.2}", i + 1, name, order.get_price_paid());
+        }
+
+        // сумма всех потраченных денег через итератор: map достает цену из каждого order,
+        // sum складывает все цены в одно число
+        // | a | a.action() == (a) => a.action()
+        let total: f32 = orders.iter().map(|order| order.get_price_paid()).sum();
+        println!("\nTotal spent: {:.2}", total);
+    }
+
+    println!("\n0. To Main Menu");
+    prompt("> ");
+
+    Screen::Main
 }
