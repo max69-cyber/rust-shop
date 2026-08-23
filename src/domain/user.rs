@@ -107,3 +107,83 @@ impl User {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn creates_valid_user() {
+        let user = User::new("Alex".to_string(), 1000.0);
+
+        assert!(user.is_ok());
+    }
+
+    #[test]
+    fn rejects_empty_name() {
+        let user = User::new("   ".to_string(), 1000.0);
+
+        assert!(matches!(user, Err(UserError::EmptyNameError)));
+    }
+
+    #[test]
+    fn rejects_non_positive_balance() {
+        let user = User::new("Alex".to_string(), 0.0);
+
+        assert!(matches!(user, Err(UserError::InvalidBalanceError)));
+    }
+
+    #[test]
+    fn buy_succeeds_and_reduces_balance() {
+        let mut user = User::new("Alex".to_string(), 1000.0).unwrap();
+        let product = Product::new(
+            "ART-1".to_string(),
+            "Mouse".to_string(),
+            300.0,
+            "".to_string(),
+        )
+        .unwrap();
+
+        let result = user.buy(&product);
+
+        assert!(result.is_ok());
+        assert_eq!(user.get_balance(), 700.0);
+        assert_eq!(user.get_orders().len(), 1);
+        assert_eq!(user.get_orders()[0].get_product_article(), "ART-1");
+    }
+
+    #[test]
+    fn buy_fails_when_not_enough_money() {
+        let mut user = User::new("Alex".to_string(), 100.0).unwrap();
+        let product = Product::new(
+            "ART-1".to_string(),
+            "Mouse".to_string(),
+            300.0,
+            "".to_string(),
+        )
+        .unwrap();
+
+        let result = user.buy(&product);
+
+        assert!(matches!(result, Err(BuyError::NotEnoughMoneyError)));
+        assert_eq!(user.get_balance(), 100.0);
+        assert_eq!(user.get_orders().len(), 0);
+    }
+
+    #[test]
+    fn buy_allows_spending_full_balance() {
+        let mut user = User::new("Alex".to_string(), 300.0).unwrap();
+        let product = Product::new(
+            "ART-1".to_string(),
+            "Mouse".to_string(),
+            300.0,
+            "".to_string(),
+        )
+        .unwrap();
+
+        let result = user.buy(&product);
+
+        assert!(result.is_ok());
+        assert_eq!(user.get_balance(), 0.0);
+    }
+}
